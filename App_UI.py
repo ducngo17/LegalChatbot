@@ -3,6 +3,19 @@ from RAG_Chain import rag_chain
 import time
 from langchain.memory import ConversationBufferWindowMemory
 
+def extract_result(response_text):
+    # Locate the position of the word "assistant" and extract everything after it
+    keyword = "assistant"
+    position = response_text.find(keyword)
+    
+    # If "assistant" is found, extract the text that follows it
+    if position != -1:
+        # Extract everything after "assistant" and strip any leading/trailing whitespace
+        extracted_text = response_text[position + len(keyword):].strip()
+        return extracted_text
+    else:
+        return "No text found after 'assistant'."
+
 # Streamlit UI setup
 st.set_page_config(page_title="Vietnamese Legal ChatBot")
 col1, col2, col3 = st.columns([1, 4, 1])
@@ -65,13 +78,15 @@ if input_prompt:
             # Print the result dictionary to inspect its structure
             #st.write(result)
 
-            for chunk in result['result']:
+            response = extract_result(result['result'])
+
+            for chunk in response:
                 full_response += chunk
                 time.sleep(0.02)
                 message_placeholder.markdown(full_response + " ▌")
 
             # Print the answer
-            #st.write(result["answer"])
+            #st.write(result["result"])
 
         st.button('Reset All Chat 🗑️', on_click=reset_conversation)
-    st.session_state.messages.append({"role": "assistant", "content": result['result']})
+    st.session_state.messages.append({"role": "assistant", "content": full_response})
